@@ -1,6 +1,6 @@
 params = {
     "D1" : 0,  # 1 lipiec
-    "D2" : 30,  # 29 sierpień
+    "D2" : 30,  # 31 lipiec
     "alpha" : 1000,  # Stała przy priorytecie (dotyczy ceny)
     "Pmax_per_interval" : 8, # Maksymalna liczba priorytetów na przedział
     "Fmax" : 5,  # Liczba miejsc w samochodzie (ile maks osób moze jechać na wakacje)

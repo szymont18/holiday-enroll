@@ -1,6 +1,6 @@
 import numpy as np
 from tests.kubak import params
-from test1 import Result
+from tests.szymon import Result
 
 class BruteForce():
     def __init__(self, cost_function):
