@@ -1,6 +1,6 @@
 from abstract_solution import AbstractSolution
-from Data import Data
-from Result import Result
+from data import Data
+from result import Result
 
 
 class GeneticJulek(AbstractSolution):
@@ -10,4 +10,6 @@ class GeneticJulek(AbstractSolution):
     def solve(self) -> Result:
         data = super().read_data_from_json()
         res = Result(data.D1, data.D2, [])
+        cost = super().cost_function(res, data)
+        print(cost)
         return res
