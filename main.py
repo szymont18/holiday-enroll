@@ -1,16 +1,10 @@
-# This is a sample Python script.
+from genetic_julek import GeneticJulek
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    path_to_solve = "tests/kubak.json"
+    solver = GeneticJulek(path_to_solve)
+    result = solver.solve()
+    print(str(result))
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+

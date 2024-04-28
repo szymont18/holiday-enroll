@@ -1,10 +1,12 @@
 import numpy as np
-from tests.kubak import params
+# from tests.kubak import params
 from tests.szymon import Result
+from abstract_solution import AbstractSolution
 
-class BruteForce():
+class BruteForce(AbstractSolution):
     def __init__(self, cost_function):
         self.cost_function = cost_function
+
     
     def _generate_next_mask(self, friends_mask):
         counter = 0
