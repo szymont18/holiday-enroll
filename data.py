@@ -7,7 +7,12 @@ class Data():
         self. fmax = data['Fmax']
         self.D = data['D']
         self.prices = data['prices']
-        self.F = self.handle_f(data["F"])
+
+        # TODO: Change it to another representation of priorities(Szymon Version)
+        # self.F = self.handle_f(data["F"])
+
+        self.F = data['F']
+
 
     def handle_f(self, f:dict):
         result = {}

@@ -1,0 +1,19 @@
+class Result:
+    def __init__(self, D1, D2, friends):
+        self.start = D1
+        self.end = D2
+        self.friends = friends  # Lista przyjaciół (podzbiór)
+
+
+Jak krzyżować dwa rozwiązania:
+a) przyjaciele (łatwo) - po prostu bierzesz z jednego podzbioru kilka przyjaciół i z drugiego kilka
+                        liczbę przyjaciół możesz dobierać na podstawie score'u wyniku
+
+b) daty
+    - wybieramy m przyjaciół z jednego rozwiązania, którym pasuje przedział czasowy z innego rozwiązania
+
+
+
+Plan działania:
+- Michał - funkcja krzyżowania oparta o średnią arytmetyczną
+-
