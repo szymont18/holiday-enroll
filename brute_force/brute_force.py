@@ -31,7 +31,7 @@ class BruteForce(AbstractSolution):
     
 
     
-    def solve_enroll(self, D1, D2, prices, alpha, Pmax_per_interval, Fmax, D, F):
+    def solve(self, D1, D2, prices, alpha, Pmax_per_interval, Fmax, D, F):
         best_result : Result = Result(None, None, None)
         best_cost = np.inf
 
@@ -85,9 +85,10 @@ def cost_f(friend, F, start, end):
         return F[friend][interval]
     return -1000
 
+
 solver = BruteForce(cost_f)
 
-result = solver.solve_enroll(**params)
+result = solver.solve(**params)
 
 print(params["F"])
 print(result.start, result.end, result.friends)

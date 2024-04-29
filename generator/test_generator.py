@@ -1,56 +1,87 @@
-D1 = 0  # 1 lipiec
-D2 = 60  # 29 sierpień
-
-# Ceny za każdy dzień
-# prices = [1000] * 10 + [1500] * 10 + [1250] * 20 + [2000] * 30
-
-alpha = 1000  # Stała przy priorytecie (dotyczy ceny)
-# Pmax = 20  # Maksymalna liczba priorytetów dla każdego użytkownika
-
-Pmax_per_interval = 8 # Maksymalna liczba priorytetów na przedział
-
-Fmax = 5  # Liczba miejsc w samochodzie (ile maks osób moze jechać na wakacje)
-D = 5  # Minimalna liczba dni na jakie znajomi jadą na wakację
-
-NUMBER_OF_PERSONS = 30
-
-
 from random import randrange
+import json
+
+def generate_prices(D1: int, D2: int) -> list[int]:
+    """
+    generate price for each day
+    """
+    return [randrange(100, 1000) for _ in range(D1, D2 + 1)]
 
 
-def generate(D2):
-
-    def generate_prices():
-        return [randrange(100, 1000) for _ in range(D2 + 1)]
-
-    def generate_interval():
-        curr_day = randrange(0, 11)
-        preference = dict()
-        while curr_day <= D2:
-            length = D
+def generate_intervals(end_day: int, min_days: int, max_per_interval: int = 8) -> list[tuple[int, int, int]]:
+    """
+    generate intervals for a single friend
+    """
+    intervals = []
+    curr_day = randrange(0, 11)
+    while curr_day <= end_day:
+        length = min_days
+        length += randrange(0, 2)
+        dice_roll = randrange(1, 11)  # 1 to 10 (D10)
+        while dice_roll <= 8:  # 70%
             length += randrange(0, 2)
             dice_roll = randrange(1, 11)  # 1 to 10 (D10)
-            while dice_roll <= 8:  # 70%
-                length += randrange(0, 2)
-                dice_roll = randrange(1, 11)  # 1 to 10 (D10)
 
-            preference[(curr_day, min(curr_day + length, D2))] = randrange(1, 9)  # * length?    # random priority
-            curr_day += length
-            curr_day += randrange(1, 10)
-        return preference
+        priority = randrange(1, max_per_interval + 1)  # random priority
+        intervals.append((curr_day, min(curr_day + length, end_day), priority))
 
-    prices = generate_prices()
+        curr_day += length
+        curr_day += randrange(1, 10)
 
-    F = dict()
-    for person in range(NUMBER_OF_PERSONS):
-        F[person] = generate_interval()
-
-    return F, prices
+    return intervals
 
 
-F, prices = generate(D2)
-print(prices)
-print()
-for item in F.items():
-    print(item)
+def generate(
+    D1: int,
+    D2: int,
+    max_per_interval: int,
+    min_days: int,
+    number_of_people: int
+) -> list[list[int]]:
+    """generate list of priorities for every friend"""
+
+    F = []
+    for _ in range(number_of_people):
+        intervals = generate_intervals(D2, min_days, max_per_interval)
+        F.append([-1000 for _ in range(D1, D2 + 1)])
+
+        for start, end, priority in intervals:
+            for i in range(start, end + 1):
+                F[-1][i] = priority
+
+    return F
+
+
+def main() -> None:
+    D1, D2 = 0, 60  # first and last day of holidays
+    alpha = 0.001  # Constant factor included while computing loss
+    max_per_interval = 8  # max priority on a single interval
+    max_seats = 5  # Number of seats in a car
+    min_days = 5  # minimum number of vacation days
+    number_of_people = 30  # number of friends
+
+    save_test = {
+        "D1": D1,
+        "D2": D2,
+        "max_per_interval": max_per_interval,
+        "alpha": alpha,
+        "max_seats": max_seats,
+        "min_days": min_days,
+        "number_of_people": number_of_people
+    }
+
+    prices = generate_prices(D1, D2)
+    save_test["prices"] = prices
+
+    F = generate(D1, D2, max_per_interval, min_days, number_of_people)
+    save_test["F"] = {}
+    for i, friend in enumerate(F):
+        save_test["F"][str(i)] = friend
+
+    with open("../tests/test2.json", 'w') as f:
+        json.dump(save_test, f)
+
+
+if __name__ == '__main__':
+    main()
 

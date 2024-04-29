@@ -2,16 +2,7 @@ from abstract_solution import AbstractSolution
 import random
 from typing import List
 from enum import Enum
-
-
-class Result:
-    def __init__(self, D1: int, D2: int, friends: set):
-        self.start = D1
-        self.end = D2
-        self.friends = friends
-
-    def __str__(self):
-        return f"start: {self.start}\nend: {self.end}\nfriends: {self.friends}"
+from result import Result
 
 
 class IntervalMutationType(Enum):
@@ -42,7 +33,7 @@ class GeneticSolver(AbstractSolution):
         friends = set(self.data.F.keys())
 
         for _ in range(n):
-            chosen_friends = set(random.sample(friends, self.data.fmax))
+            chosen_friends = set(random.sample(list(friends), self.data.fmax))
             start = random.randint(0, self.data.D2 - self.data.D - 2)
             end = start + self.data.D
             samples.append(Result(start, end, chosen_friends))
@@ -116,10 +107,10 @@ class GeneticSolver(AbstractSolution):
         friends_from2 = max(random.randint(1, len(result2.friends)), self.data.D - friends_from1)
 
         for _ in range(friends_from1):
-            new_friends.add(random.sample(result1.friends, 1)[0])
+            new_friends.add(random.sample(list(result1.friends), 1)[0])
 
         for _ in range(friends_from2):
-            new_friends.add(random.sample(result1.friends, 1)[0])
+            new_friends.add(random.sample(list(result1.friends), 1)[0])
 
         return Result(result1.start, result1.end, new_friends)
 
@@ -166,7 +157,7 @@ class GeneticSolver(AbstractSolution):
 
     def _ass(self, samples: List[Result]):
         for sample in samples:
-            assert  0 <= sample.start < len(self.data.prices)
+            assert 0 <= sample.start < len(self.data.prices)
             assert 0 <= sample.end < len(self.data.prices), f'{sample.end}'
 
     def solve(self) -> Result:
