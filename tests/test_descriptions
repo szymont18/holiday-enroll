@@ -1,0 +1,16 @@
+----------------------------------------
+Test1 - random test
+----------------------------------------
+Test2 - random test
+----------------------------------------
+Test3
+There is enough space for all friend in the car.
+Also all friends can go in every day (there is no minus priorities)
+Problem checks if the solver return solution Sol
+with |friend| == |all_friends| and start = 0 and end = 60
+----------------------------------------
+Test 4
+There is only one available departure with positive
+priorities. Also there is enough space for only three
+friends.
+start = 1; end = 10; friends = {0, 4, 9}
