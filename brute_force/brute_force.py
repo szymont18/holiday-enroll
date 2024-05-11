@@ -31,17 +31,11 @@ class BruteForce(AbstractSolution):
             if friends_idx[i] == prev - 1:
                 counter += 1
                 prev = friends_idx[i] 
-                if i < len(friends_idx) - counter:
-                    friends_idx[i] = 0
-                    for j in range(i + 1, i + counter + 1):
-                        friends_idx[j] = 1
-                    return True
-                else:
-                    friends_idx[i] = 0
             else:
                 friends_idx[i] += 1
                 for j in range(i+1, len(friends_idx)):
                     friends_idx[j] = friends_idx[j-1] + 1
+                return True
 
                     
         return False
@@ -76,10 +70,10 @@ class BruteForce(AbstractSolution):
         empty_seat_penality = 0
         while friends_taken > 0:
             print(f'friends_taken {friends_taken}')
-            friends_mask = np.array([1 if i < friends_taken else 0 for i in range(len(friends))])
+            friends_idx = np.array(list(range(friends_taken)))
             counter = 1
             while True:
-                friends_idx = np.where(friends_mask == 1)[0]
+                
                 for start in range(data.D1, data.D2 - data.D):
                     for end in range(start + data.D, data.D2):
 
@@ -93,7 +87,7 @@ class BruteForce(AbstractSolution):
                             best_result = Result(start, end, friends_idx.copy())
                             best_cost = cost
 
-                if not self._generate_next_mask(friends_mask):
+                if not self._generate_next_idxs(friends_idx):
                     break
                 if not counter % 100:
                     print('|', end='')
@@ -104,16 +98,6 @@ class BruteForce(AbstractSolution):
         print(best_cost)
         return best_result
 
-def cost_f(friend, F, start, end):
-    for interval in F[friend].keys():
-        if interval[0] <= start and interval[1] >= start:
-            break
-    else:
-        return -1000
-    
-    if interval[1] >= end:
-        return F[friend][interval]
-    return -1000
 
 
 
