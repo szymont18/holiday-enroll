@@ -77,7 +77,7 @@ class Genetic(AbstractSolution):
 
     def _calculate_loss(self, sol: Solution) -> float:
         priority_val = np.sum(self.priorities[sol.mask, sol.start:sol.end+1])
-        holiday_cost = np.sum(self.prices[sol.mask])*self.alpha
+        holiday_cost = np.sum(self.prices[sol.start:sol.end+1])*self.alpha
         empty_seats = (self.max_seats - np.unique(sol.mask).shape[0])*1000
         return -priority_val + holiday_cost + empty_seats
 
