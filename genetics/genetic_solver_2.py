@@ -132,6 +132,6 @@ class Genetic(AbstractSolution):
 
 
 if __name__ == '__main__':
-    solver = Genetic("../tests/test2.json")
+    solver = Genetic("../tests/test4.json")
     print(solver.solve())
 
