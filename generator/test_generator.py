@@ -1,3 +1,4 @@
+import random
 from random import randrange
 import json
 
@@ -82,6 +83,10 @@ def main() -> None:
         json.dump(save_test, f)
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 
+friends = [str(i) for i in range(10)]
+F = {f: [-1 for _ in range(61)] for f in friends}
+for f in F.keys():
+    print(f'"{f}": {F[f]},')

@@ -3,7 +3,7 @@ import random
 from typing import List
 from enum import Enum
 from result import Result
-
+import numpy as np
 
 class IntervalMutationType(Enum):
     WIDEN_START = 0
@@ -18,47 +18,58 @@ class GeneticSolver(AbstractSolution):
         super().__init__(path_to_solve)
         self.data = self.read_data_from_json()
 
-        self.generations = generation_no
+        self.max_seats = self.data.fmax
+        self.friend_indexes = np.array(range(self.data.number_of_people))
+        self.start = self.data.D1
+        self.end = self.data.D2
+        self.max_duration = self.data.D
 
+        self._priorities()
+
+        self.prices = self.data.prices
+        self.alpha = self.data.alpha
+
+        self.generations = generation_no
         self.mutation_ratio = mutation_sample
+
+    """
+    Change dict priorities to matrix
+    """
+    def _priorities(self):
+        self.friends_names = list(self.data.F.keys())
+        self.friend_priorities = np.array([self.data.F[friend] for friend in self.friends_names])
+
 
     """
     Function that sample random results
     Requires to start the genetic solver
     Also used to add more samples after each generation
     """
-
     def _random_samples(self, n=100) -> List[Result]:
         samples = []
-        friends = set(self.data.F.keys())
 
         for _ in range(n):
-            chosen_friends = set(random.sample(list(friends), self.data.fmax))
-            start = random.randint(0, self.data.D2 - self.data.D - 2)
-            end = start + self.data.D
-            samples.append(Result(start, end, chosen_friends))
+            # Random friends
+            chosen_friend = np.random.choice(self.friend_indexes, self.max_seats, replace=False)
+
+            # Random boundaries
+            start = np.random.randint(self.start, self.end - self.max_duration + 1)
+            random_duration = np.random.randint(1, self.max_duration + 1)
+            end = start + random_duration
+
+            samples.append(Result(start, end, chosen_friend))
 
         return samples
 
     """
     Chose group of friends from the result and replace them
     Friends are chosen randomly
-    If there are too many friends try to add new
     """
-
     def _mutate_friends(self, result: Result):
-        friends = result.friends
-        all_friends = self.data.F
+        replace_ind = np.random.randint(len(result.friends))
+        replace_by = np.random.randint(len(self.friend_priorities))
 
-        replace_by = random.choice(list(all_friends.keys()))
-
-        result.friends.pop()
-        result.friends.add(replace_by)
-
-        # There is still place in the car
-        if len(result.friends) < self.data.fmax:
-            random_friend = random.choice(list(all_friends.keys()))
-            result.friends.add(random_friend)
+        result.friends[replace_ind] = replace_by
 
         return result
 
@@ -66,7 +77,6 @@ class GeneticSolver(AbstractSolution):
     Move the start and the end of the interval a few position
     The interval can either widen or shrink 
     """
-
     def _mutate_interval(self, result: Result):
         move = random.randint(1, self.data.D * 2)  # Max mutation moving by 2 * D days
         mutation_character = random.choice(list(IntervalMutationType))
@@ -85,11 +95,16 @@ class GeneticSolver(AbstractSolution):
 
         return result
 
+    def _mutate(self, result:Result):
+        if random.choice([True, False]):
+            return self._mutate_friends(result)
+
+        return self._mutate_interval(result)
+
     """
     Cross two results
     There are two type of crossing (by friends and by interval)
     """
-
     def _cross(self, result1: Result, result2: Result):
         if random.choice([True, False]):
             return self._friend_cross(result1, result2)
@@ -102,15 +117,12 @@ class GeneticSolver(AbstractSolution):
     """
 
     def _friend_cross(self, result1: Result, result2: Result):
-        new_friends = set()
-        friends_from1 = random.randint(1, len(result1.friends))
-        friends_from2 = max(random.randint(1, len(result2.friends)), self.data.D - friends_from1)
+        friends_from1 = np.random.choice(result1.friends, max(1, len(result1.friends) - 2), replace=False)
+        friends_from2 = np.random.choice(result2.friends,
+                                         min(np.random.randint(1, self.max_seats - len(friends_from1)), len(result2.friends)),
+                                         replace=False)
 
-        for _ in range(friends_from1):
-            new_friends.add(random.sample(list(result1.friends), 1)[0])
-
-        for _ in range(friends_from2):
-            new_friends.add(random.sample(list(result1.friends), 1)[0])
+        new_friends = np.concatenate((friends_from1, friends_from2))
 
         return Result(result1.start, result1.end, new_friends)
 
@@ -119,17 +131,16 @@ class GeneticSolver(AbstractSolution):
     The boundary of the result2 interval may shrink
     The return interval is the best match for the friends from first friend set 
     """
-
     def _interval_cross(self, result1: Result, result2: Result):
         priority_arr = [0] * (result2.end - result2.start + 1)
 
         # Find priority array
         for friend in result1.friends:
             for day in range(result2.start, result2.end):
-                priority_arr[day - result2.start] += self.data.F[friend][day]
+                priority_arr[day - result2.start] += self.friend_priorities[friend][day]
 
-        # Number of days is taken from result1
-        no_days = max((result2.end - result2.start) // 2, self.data.D)
+        # Number of days is taken from result2
+        no_days = max((result2.end - result2.start) // 2, self.max_duration)
 
         priority_sum = sum(priority_arr[:no_days])
         best_priority_sum = priority_sum
@@ -154,11 +165,23 @@ class GeneticSolver(AbstractSolution):
 
         return priority
 
+    def _calculate_loss(self, sol: Result) -> float:
+        priority_val = np.sum(self.friend_priorities[sol.friends, sol.start:sol.end+1])
+        holiday_cost = np.sum(self.prices[sol.start:sol.end + 1])*self.alpha
+        empty_seats = (self.max_seats - np.unique(sol.friends).shape[0])*1000
+        return -priority_val + holiday_cost + empty_seats
 
-    def _ass(self, samples: List[Result]):
-        for sample in samples:
-            assert 0 <= sample.start < len(self.data.prices)
-            assert 0 <= sample.end < len(self.data.prices), f'{sample.end}'
+    def _reduce_population(self, samples, old_samples_loss, population_size):
+        new_samples = []
+        for i in range(population_size):
+            new_samples.append(samples[old_samples_loss[i]])
+        return new_samples
+
+
+    def _get_result(self, sample:Result):
+        friends_name = [self.friends_names[ind] for ind in np.unique(sample.friends)]
+        result = Result(sample.start, sample.end, friends_name)
+        return result
 
     def solve(self) -> Result:
         generation_population_no = 100
@@ -169,46 +192,40 @@ class GeneticSolver(AbstractSolution):
 
         for generation in range(self.generations):
             if generation % 100 == 0:
-                print(f'{generation} Generation')
+                print(f"Generation: {generation}. Best loss: {best_result}")
 
-            new_samples = samples
-            self._ass(new_samples)
+            # Find the best sample
+            loss_values = np.array(list(map(self._calculate_loss, samples)))
+            best_values = np.argsort(loss_values)
 
-            # Mutations
-            to_mutate_no = int(len(new_samples) * self.mutation_ratio)
-            to_mutate = random.sample(new_samples, to_mutate_no)
+            if loss_values[best_values[0]] < best_result:
+                best_result = loss_values[best_values[0]]
+                best_sample = samples[best_values[0]]
 
-            friend_mutation = map(self._mutate_friends, to_mutate[:to_mutate_no // 2])
-            interval_mutation = map(self._mutate_interval, to_mutate[to_mutate_no // 2:])
+            # Reduce population
+            samples = self._reduce_population(samples, best_values, generation_population_no)
 
-            new_samples.extend(friend_mutation)
-            new_samples.extend(interval_mutation)
-            self._ass(new_samples)
+            # Create new generation
+            for parent_pair_idx in range(len(samples) // 2):
+                parent_pair = random.sample(samples, 2)
 
-            # Crossing
-            for pair_no in range(len(new_samples) // 2):
-                pair = random.sample(new_samples, 2)
-                new_samples.append(self._cross(pair[0], pair[1]))
+                # Create new children by crossing
+                child = self._cross(parent_pair[0], parent_pair[1])
 
-            self._ass(new_samples)
+                # Mutate children
+                child = self._mutate(child)
 
-            # Chose the best 90% samples
-            results = [(sample, self.cost_function(sample, self.data)) for sample in new_samples]
-            new_samples = sorted(results, key=lambda sample: sample[1])
+                # Add to population
+                samples.append(child)
 
-            new_samples = new_samples[:int(0.9 * generation_population_no)]
+            # Create new random samples (10 %)
+            samples.extend(self._random_samples(generation_population_no // 10))
 
-            if new_samples[0][1] < best_result:
-                best_result = new_samples[0][1]
-                best_sample = new_samples[0][0]
+        return self._get_result(best_sample)
 
-            new_samples = list(map(lambda x: x[0], new_samples))
 
-            # Take 10 % of new random samples
-            fresh_samples = self._random_samples(int(0.1 * generation_population_no))
-            new_samples.extend(fresh_samples)
-
-            samples = new_samples
-
-        print(f"Cost Function = {best_result}")
-        return best_sample
+if __name__ == '__main__':
+    path = "../tests/test4.json"
+    solver = GeneticSolver(path)
+    result = solver.solve()
+    print(f'Result = {str(result)}')
