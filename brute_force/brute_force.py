@@ -1,7 +1,7 @@
 import numpy as np
-from result import Result
-from abstract_solution import AbstractSolution
-from data import Data
+from interfaces.result import Result
+from interfaces.abstract_solution import AbstractSolution
+from interfaces.data import Data
 
 class BruteForce(AbstractSolution):
     def __init__(self, path_to_solve: str):

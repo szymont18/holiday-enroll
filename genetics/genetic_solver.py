@@ -1,8 +1,8 @@
-from abstract_solution import AbstractSolution
+from interfaces.abstract_solution import AbstractSolution
 import random
 from typing import List
 from enum import Enum
-from result import Result
+from interfaces.result import Result
 import numpy as np
 
 class IntervalMutationType(Enum):
