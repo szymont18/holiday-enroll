@@ -1,5 +1,5 @@
-from abstract_solution import AbstractSolution
-from result import Result
+from interfaces.abstract_solution import AbstractSolution
+from interfaces.result import Result
 from dataclasses import dataclass
 from scipy.stats import halfcauchy
 import numpy as np
