@@ -1,5 +1,5 @@
-from abstract_solution import AbstractSolution
-from result import Result
+from interfaces.abstract_solution import AbstractSolution
+from interfaces.result import Result
 from dataclasses import dataclass
 from scipy.stats import halfcauchy
 import numpy as np
@@ -56,9 +56,6 @@ class Genetic(AbstractSolution):
         self.population_size = population_size
 
     def _priorities(self) -> np.array:
-        """
-        Store friends' priorities in numpy array
-        """
         self.mapping = {}
         self.idx = np.array(list(range(self.number_of_people)))
         priorities = np.zeros((self.number_of_people, self.number_of_days))
@@ -69,7 +66,7 @@ class Genetic(AbstractSolution):
 
         return priorities
 
-    def _random_solution(self):
+    def _random_solution(self) -> Solution:
         mask = np.random.choice(self.idx, size=self.max_seats, replace=False)
         start = np.random.randint(self.number_of_days - self.min_days)
         end = min(int(halfcauchy.rvs(loc=start+self.min_days, scale=5)), self.number_of_days - 1)
