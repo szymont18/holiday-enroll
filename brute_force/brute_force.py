@@ -96,7 +96,7 @@ class BruteForce(AbstractSolution):
             empty_seat_penality += 1000
             print('')
         print(best_cost)
-        return best_result
+        return best_result, best_cost
 
 
 

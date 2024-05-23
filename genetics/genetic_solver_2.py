@@ -103,7 +103,8 @@ class Genetic(AbstractSolution):
 
         return new_population
 
-    def solve(self) -> Result:
+    def solve(self) -> tuple:
+        best_cost_values = []
         population = [self._random_solution() for _ in range(self.population_size)]
         best_sol = population[0]
         best_loss = self._calculate_loss(best_sol)
@@ -112,6 +113,8 @@ class Genetic(AbstractSolution):
             if i % 100 == 0:
                 print(f"Generation: {i}")
                 print(f"Best loss so far: {best_loss}")
+            if i%10 ==0:
+                best_cost_values.append(best_loss)
 
             loss_values = np.array(list(map(self._calculate_loss, population)))
             best_values = np.argsort(loss_values)
@@ -125,7 +128,7 @@ class Genetic(AbstractSolution):
 
             population = new_population + new_random_samples
 
-        return self._sol_to_res(best_sol)
+        return self._sol_to_res(best_sol), best_cost_values
 
 
 if __name__ == '__main__':
