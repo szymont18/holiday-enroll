@@ -183,7 +183,8 @@ class GeneticSolver(AbstractSolution):
         result = Result(sample.start, sample.end, friends_name)
         return result
 
-    def solve(self) -> Result:
+    def solve(self) -> tuple:
+        cost_funcs_values = []
         generation_population_no = 100
         samples = self._random_samples(generation_population_no)
 
@@ -193,6 +194,8 @@ class GeneticSolver(AbstractSolution):
         for generation in range(self.generations):
             if generation % 100 == 0:
                 print(f"Generation: {generation}. Best loss: {best_result}")
+            if generation % 10 == 0:
+                cost_funcs_values.append(best_result)
 
             # Find the best sample
             loss_values = np.array(list(map(self._calculate_loss, samples)))
@@ -221,7 +224,7 @@ class GeneticSolver(AbstractSolution):
             # Create new random samples (10 %)
             samples.extend(self._random_samples(generation_population_no // 10))
 
-        return self._get_result(best_sample)
+        return self._get_result(best_sample), cost_funcs_values
 
 
 if __name__ == '__main__':

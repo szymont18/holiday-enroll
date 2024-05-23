@@ -100,7 +100,8 @@ class Annealing(AbstractSolution):
             mask = self._neighboring_set(sol.mask)
             return Solution(sol.start, sol.end, mask)
 
-    def solve(self) -> Result:
+    def solve(self) -> tuple:
+        best_loss_values = []
         current_state = self._random_solution()
         best_state = current_state
         current_energy = self._calculate_loss(current_state)
@@ -128,9 +129,11 @@ class Annealing(AbstractSolution):
 
             if i % 100 == 0:
                 print(f"Iteration {i}, best loss so far: {opt_loss}")
+            if i % 10 == 0:
+                best_loss_values.append(opt_loss)
             T *= self.alpha
 
-        return self._sol_to_res(best_state)
+        return self._sol_to_res(best_state), best_loss_values
 
 
 if __name__ == "__main__":

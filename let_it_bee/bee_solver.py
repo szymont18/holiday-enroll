@@ -119,7 +119,8 @@ class BeeSolver(AbstractSolution):
             if self.scouts_flies[scout_number] >= self.max_stagnations:
                 self.scouts[scout_number] = self._random_solution()
 
-    def solve(self) -> Result:
+    def solve(self) -> tuple:
+        best_cost_values = []
         population = [self._random_solution() for _ in range(self.population_size)]
         best_sol = population[0]
         best_loss = self._calculate_loss(best_sol)
@@ -132,6 +133,8 @@ class BeeSolver(AbstractSolution):
             if i % 100 == 0:
                 print(f"Generation: {i}")
                 print(f"Best loss so far: {best_loss}")
+            if i% 10 == 0:
+                best_cost_values.append(best_loss)
 
             loss_values = np.array(list(map(self._calculate_loss, population)))
             best_values = np.argsort(loss_values)
@@ -148,7 +151,7 @@ class BeeSolver(AbstractSolution):
 
             new_random_samples = [self._random_solution() for _ in range(self.population_size // 5)]
             population = new_random_samples + self.scouts
-        return self._sol_to_res(best_sol)
+        return self._sol_to_res(best_sol), best_cost_values
 
     def _update_scouts(self, population, best_values) -> None:
         if self.scouts[2] != population[best_values[2]]:
