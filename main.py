@@ -3,7 +3,7 @@ from genetics.genetic_solver import GeneticSolver
 from brute_force.brute_force import BruteForce
 from let_it_bee.bee_solver import BeeSolver
 from interfaces.abstract_solution import AbstractSolution
-from České_žíhání.annealing import Annealing
+from simulated_annealing.annealing import Annealing
 from time import time
 
 
