@@ -16,8 +16,8 @@ def mutate_mask(mask: np.array, max_people: int, p=0.1):
     return mask
 
 
-def mutate_interval(start: int, end: int, max_day: int) -> tuple[int, int]:
-    offset = int(np.random.normal(0, 2))
+def mutate_interval(start: int, end: int, max_day: int, off) -> tuple[int, int]:
+    offset = int(np.random.normal(0, off))
     start += offset
     end += offset
     if start < 0:
@@ -44,7 +44,9 @@ class Solution:
 class BeeSolver(AbstractSolution):
     def __init__(self, path_to_solve: str, generation_no: int = 3000,
                  population_size: int = 200,
-                 max_gens_without_improvement: int = 7) -> None:
+                 max_gens_without_improvement: int = 7,
+                 p=0.1,
+                 off = 2) -> None:
         super().__init__(path_to_solve)
 
         self.data = self.read_data_from_json()
@@ -53,6 +55,8 @@ class BeeSolver(AbstractSolution):
         self.min_days = self.data.D
         self.max_seats = self.data.fmax
         self.alpha = self.data.alpha
+        self.p = p
+        self.off = off
 
         self.priorities = self._priorities()
         self.prices = np.array(self.data.prices)
@@ -94,14 +98,14 @@ class BeeSolver(AbstractSolution):
         friends = list(map(self.mapping.get, sol.mask))
         return Result(sol.start, sol.end, friends)
 
-    def _recruitment(self, scout_number: int, no_iter: int) -> None:
+    def _recruitment(self, scout_number: int, no_iter: int, p, off) -> None:
         scout: Solution = self.scouts[scout_number]
         new_bees = []
         for _ in range(no_iter):
             if np.random.uniform(0, 1) > 0.5:
-                bee = Solution(*mutate_interval(scout.start, scout.end, self.number_of_days - 1), scout.mask.copy())
+                bee = Solution(*mutate_interval(scout.start, scout.end, self.number_of_days - 1,off), scout.mask.copy())
             else:
-                bee = Solution(scout.start, scout.end, mutate_mask(scout.mask.copy(), self.number_of_people - 1))
+                bee = Solution(scout.start, scout.end, mutate_mask(scout.mask.copy(), self.number_of_people - 1, p))
             new_bees.append(bee)
         # new_bees = [Solution(
         #     *mutate_interval(scout.start, scout.end, self.number_of_days - 1),
@@ -133,21 +137,21 @@ class BeeSolver(AbstractSolution):
             if i % 100 == 0:
                 print(f"Generation: {i}")
                 print(f"Best loss so far: {best_loss}")
-            if i% 10 == 0:
-                best_cost_values.append(best_loss)
+
 
             loss_values = np.array(list(map(self._calculate_loss, population)))
             best_values = np.argsort(loss_values)
-
+            if i% 10 == 0:
+                best_cost_values.append(loss_values[best_values[0]])
             self._update_scouts(population, best_values)
 
             if loss_values[best_values[0]] < best_loss:
                 best_loss = loss_values[best_values[0]]
                 best_sol = population[best_values[0]]
 
-            self._recruitment(0, self.population_size * 2 // 5)
-            self._recruitment(1, self.population_size // 5)
-            self._recruitment(2, self.population_size // 5)
+            self._recruitment(0, self.population_size * 2 // 5, self.p, self.off)
+            self._recruitment(1, self.population_size // 5, self.p, self.off)
+            self._recruitment(2, self.population_size // 5, self.p, self.off)
 
             new_random_samples = [self._random_solution() for _ in range(self.population_size // 5)]
             population = new_random_samples + self.scouts
@@ -177,5 +181,5 @@ class BeeSolver(AbstractSolution):
 
 
 if __name__ == '__main__':
-    solver = BeeSolver("../tests/test5.json")
+    solver = BeeSolver("../tests/test5.json", 3000, population_size= 200)
     print(solver.solve())

@@ -110,6 +110,7 @@ class Annealing(AbstractSolution):
         T = self.initial_temperature
 
         for i in range(self.iterations):
+            gen_best = float('inf')
             for _ in range(self.steps_in_one_epoch):
                 neighbor = self._generate_neighbor(current_state)
                 next_energy = self._calculate_loss(neighbor)
@@ -127,10 +128,12 @@ class Annealing(AbstractSolution):
                     opt_loss = current_energy
                     best_state = current_state
 
+                gen_best = min(current_energy, gen_best)
+
             if i % 100 == 0:
                 print(f"Iteration {i}, best loss so far: {opt_loss}")
             if i % 10 == 0:
-                best_loss_values.append(opt_loss)
+                best_loss_values.append(gen_best)
             T *= self.alpha
 
         return self._sol_to_res(best_state), best_loss_values

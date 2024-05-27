@@ -14,9 +14,10 @@ class IntervalMutationType(Enum):
 
 class GeneticSolver(AbstractSolution):
 
-    def __init__(self, path_to_solve: str, generation_no=10000, mutation_sample=0.1):
+    def __init__(self, path_to_solve: str, generation_no=10000, mutation_sample=0.1, population_size = 100):
         super().__init__(path_to_solve)
         self.data = self.read_data_from_json()
+        self.generation_population_no = population_size
 
         self.max_seats = self.data.fmax
         self.friend_indexes = np.array(range(self.data.number_of_people))
@@ -185,7 +186,7 @@ class GeneticSolver(AbstractSolution):
 
     def solve(self) -> tuple:
         cost_funcs_values = []
-        generation_population_no = 100
+        generation_population_no = self.generation_population_no
         samples = self._random_samples(generation_population_no)
 
         best_sample = samples[0]
@@ -194,12 +195,14 @@ class GeneticSolver(AbstractSolution):
         for generation in range(self.generations):
             if generation % 100 == 0:
                 print(f"Generation: {generation}. Best loss: {best_result}")
-            if generation % 10 == 0:
-                cost_funcs_values.append(best_result)
+
 
             # Find the best sample
             loss_values = np.array(list(map(self._calculate_loss, samples)))
             best_values = np.argsort(loss_values)
+
+            if generation % 10 == 0:
+                cost_funcs_values.append(loss_values[best_values[0]])
 
             if loss_values[best_values[0]] < best_result:
                 best_result = loss_values[best_values[0]]
