@@ -21,35 +21,40 @@ if __name__ == '__main__':
     # test(BruteForce, "tests/test1.json")
     while True:
         path = input("podaj ścieżkę do pliku z wejściem do algorytmu (np. tests/test1.json): ")
-        algorithm = input("wybierz algorytm:\n\t-brute-force\n\t-genetyczny 1\n\t-genetyczny 2\n\t-pszczeli\n\t-czeskie wyżarzanie\n")
+        algorithm = input("wybierz algorytm:\n\t-brute-force\n\t-genetyczny 1\n\t-genetyczny 2\n\t-pszczeli\n\t-symulowane wyżarzanie\n")
         keep_this_file = True
         while keep_this_file:
             match algorithm.strip():
                 case "brute-force":
-                    res, _ = BruteForce(path).solve()
+                    res, cost = BruteForce(path).solve()
+                    print(f"ZNALEZIONA WARTOŚĆ FUNKCJI KOSZTU: {cost}")
                     print(f"ZNALEZIONA ODPOWIEDŹ:\n{res}")
                 case "genetyczny 1":
                     genno = int(input("podaj liczbę generacji (domyślnie 10000)"))
                     mutsampl = float(input("podaj rozmiar mutacji (domyślnie 0.1)"))
-                    res, _ = GeneticSolver(path, generation_no= genno, mutation_sample= mutsampl).solve()
+                    res, cost = GeneticSolver(path, generation_no= genno, mutation_sample= mutsampl).solve()
+                    print(f"ZNALEZIONA WARTOŚĆ FUNKCJI KOSZTU: {min(cost)}")
                     print(f"ZNALEZIONA ODPOWIEDŹ:\n{res}")
                 case "genetyczny 2":
                     genno = int(input("podaj liczbę generacji (domyślnie 10000)"))
                     pop_size = int(input("podaj rozmiar populacji (domyślnie 100)"))
-                    res, _ = Genetic(path, generation_no= genno, population_size=pop_size).solve()
+                    res, cost = Genetic(path, generation_no= genno, population_size=pop_size).solve()
+                    print(f"ZNALEZIONA WARTOŚĆ FUNKCJI KOSZTU: {min(cost)}")
                     print(f"ZNALEZIONA ODPOWIEDŹ:\n{res}")
                 case "pszczeli":
                     genno = int(input("podaj liczbę generacji (domyślnie 3000)"))
                     pop_size = int(input("podaj rozmiar populacji (domyślnie 200)"))
                     maxgens = int(input("maksymalna liczba generacji w której może nie być poprawy (domyślnie 7)"))
-                    res, _ = BeeSolver(path, generation_no=genno, population_size=pop_size, max_gens_without_improvement=maxgens).solve()
+                    res, cost = BeeSolver(path, generation_no=genno, population_size=pop_size, max_gens_without_improvement=maxgens).solve()
+                    print(f"ZNALEZIONA WARTOŚĆ FUNKCJI KOSZTU: {min(cost)}")
                     print(f"ZNALEZIONA ODPOWIEDŹ:\n{res}")
-                case "czeskie wyżarzanie":
+                case "symulowane wyżarzanie":
                     iters = int(input("podaj liczbę iteracji (domyślnie 10000)"))
                     steps = int(input("podaj liczbę kroków w jedenj epoce (domyślnie 100)"))
                     initemp = int(input("podaj początkową temperaturę (domyślnie 10000)"))
                     alph = float(input("podaj współczynnik aplha (domyślnie 0.999"))
-                    res, _ = Annealing(path, iterations=iters, steps_in_one_epoch=steps, initial_temperature=initemp, alpha=alph).solve()
+                    res, cost = Annealing(path, iterations=iters, steps_in_one_epoch=steps, initial_temperature=initemp, alpha=alph).solve()
+                    print(f"ZNALEZIONA WARTOŚĆ FUNKCJI KOSZTU: {min(cost)}")
                     print(f"ZNALEZIONA ODPOWIEDŹ:\n{res}")
                 case _:
                     print("taki algorytm nie instnieje")
